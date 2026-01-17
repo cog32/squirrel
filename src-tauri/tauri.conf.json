@@ -1,0 +1,30 @@
+{
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "Squirrel COVID",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "windows": [
+      {
+        "title": "Squirrel COVID",
+        "width": 900,
+        "height": 600
+      }
+    ],
+    "allowlist": {
+      "all": false,
+      "dialog": {
+        "open": true
+      }
+    },
+    "security": {
+      "csp": null
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "squirrel-covid",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.0.0",
+    "@tauri-apps/api": "^1.6.0",
+    "@tauri-apps/cli": "^1.6.0",
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3",
+    "vite": "^5.4.10"
+  },
+  "scripts": {
+    "dev": "vite --port 1420 --strictPort",
+    "build": "vite build",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "parse": "cargo run --manifest-path src-tauri/Cargo.toml --bin ledger-parse --",
+    "test:bdd": "npm run test:bdd:parser",
+    "test:bdd:parser": "cargo test --manifest-path src-tauri/Cargo.toml --test bdd",
+    "test:bdd:ui": "cucumber-js",
+    "test:bdd:dry": "cucumber-js --dry-run"
+  }
+}
