@@ -27,11 +27,24 @@ Examples:
 */
 
 file
-  : (blankLine | directive | transaction)* EOF
+  : (blankLine | directive | accountDeclaration | transaction)* EOF
   ;
 
 transaction
   : headerLine postingLine+ blankLine*
+  ;
+
+accountDeclaration
+  : 'account' WS+ account (WS+ commodity)? WS* metaComment? NEWLINE
+    accountDeclLine* blankLine*
+  ;
+
+accountDeclLine
+  : INDENT accountDeclBody WS* metaComment? NEWLINE
+  ;
+
+accountDeclBody
+  : 'opening' WS+ signedNumber (WS+ commodity)?
   ;
 
 headerLine
@@ -248,7 +261,7 @@ IDLIKE
   ;
 
 PATHLIKE
-  : PATHSEG ':' PATHSEG ':' PATHSEG (':' PATHSEG)*
+  : PATHSEG ':' PATHSEG (':' PATHSEG)*
   ;
 
 QUOTED

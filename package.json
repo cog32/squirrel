@@ -8,6 +8,8 @@
     "@tauri-apps/api": "^1.6.0",
     "@tauri-apps/cli": "^1.6.0",
     "@types/node": "^22.10.7",
+    "appium": "^3.0.0",
+    "selenium-webdriver": "^4.34.0",
     "typescript": "^5.7.3",
     "vite": "^5.4.10"
   },
@@ -21,6 +23,8 @@
     "test:bdd": "npm run test:bdd:parser",
     "test:bdd:parser": "cargo test --manifest-path src-tauri/Cargo.toml --test bdd",
     "test:bdd:ui": "cucumber-js",
-    "test:bdd:dry": "cucumber-js --dry-run"
+    "test:bdd:dry": "cucumber-js --dry-run",
+    "e2e": "node scripts/run_tauri_webdriver_e2e.mjs",
+    "e2e:mac": "E2E_BACKEND=appium-mac2 cucumber-js --tags @appium"
   }
 }

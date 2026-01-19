@@ -10,6 +10,12 @@
     "version": "0.1.0"
   },
   "tauri": {
+    "bundle": {
+      "active": true,
+      "targets": ["app"],
+      "identifier": "com.cog32.squirrelcovid",
+      "icon": ["icons/icon.png"]
+    },
     "windows": [
       {
         "title": "Squirrel COVID",
