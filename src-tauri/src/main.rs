@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use squirrel_covid::generated_ledger::rotate_ledger_if_needed;
-use squirrel_covid::generated_store::{add_manual_transaction, import_source_files, load_active_ledger, ImportStats, ManualTransactionInput};
+use squirrel_covid::generated_store::{add_account_declaration, add_manual_transaction, import_source_files, load_active_ledger, ImportStats, ManualTransactionInput};
 use squirrel_covid::ledger_parser::{
   parse_transactions, AccountBalance, Diagnostic, ParseResult, Transaction,
 };
@@ -95,6 +95,19 @@ fn parse_transactions_file(path: String) -> Result<ParseResponse, String> {
   Ok(result.into())
 }
 
+#[tauri::command]
+fn add_account_to_generated_ledger(
+  app: tauri::AppHandle,
+  account_name: String,
+  currency: Option<String>,
+  opening_balance: Option<String>,
+) -> Result<ParseResponse, String> {
+  let generated_dir = resolve_generated_dir(&app)?;
+  add_account_declaration(&generated_dir, &account_name, currency.as_deref(), opening_balance.as_deref())?;
+  let result = load_active_ledger(&generated_dir)?;
+  Ok(result.into())
+}
+
 fn main() {
   tauri::Builder::default()
     .setup(|app| {
@@ -119,7 +132,8 @@ fn main() {
       rotate_generated_ledger,
       load_generated_ledger,
       import_generated_sources,
-      add_manual_to_generated_ledger
+      add_manual_to_generated_ledger,
+      add_account_to_generated_ledger
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

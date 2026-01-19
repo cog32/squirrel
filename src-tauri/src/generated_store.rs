@@ -367,6 +367,35 @@ pub fn add_manual_transaction(
   Ok(id)
 }
 
+pub fn add_account_declaration(
+  base_dir: &Path,
+  account_name: &str,
+  currency: Option<&str>,
+  opening_balance: Option<&str>,
+) -> Result<(), String> {
+  fs::create_dir_all(base_dir).map_err(|e| e.to_string())?;
+
+  let dest = generated_ledger_path(base_dir);
+
+  // Build the account declaration line
+  let mut text = format!("account {}", account_name);
+  if let Some(curr) = currency {
+    text.push(' ');
+    text.push_str(curr);
+  }
+  text.push('\n');
+
+  // Add opening balance if provided
+  if let Some(balance) = opening_balance {
+    let curr = currency.unwrap_or("USD");
+    text.push_str(&format!("    opening {} {}\n", balance, curr));
+  }
+
+  append_text(&dest, &text).map_err(|e| e.to_string())?;
+
+  Ok(())
+}
+
 pub fn load_active_ledger(base_dir: &Path) -> Result<ParseResult, String> {
   let ledger = generated_ledger_path(base_dir);
   if !ledger.exists() {
