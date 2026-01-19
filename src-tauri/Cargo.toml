@@ -2,6 +2,7 @@
 name = "squirrel-covid"
 version = "0.1.0"
 edition = "2021"
+default-run = "squirrel-covid"
 
 [build-dependencies]
 tauri-build = { version = "1.5", features = [] }
@@ -12,6 +13,9 @@ serde_json = "1"
 tauri = { version = "1.5", features = ["dialog-open"] }
 regex = "1"
 thiserror = "1"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
 
 [dev-dependencies]
 cucumber = "=0.21.1"
