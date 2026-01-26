@@ -213,6 +213,37 @@ async function addManualTransaction(state: AppState): Promise<void> {
   }
 }
 
+async function addAccountDeclaration(state: AppState): Promise<void> {
+  const draft = state.addAccountDraft;
+  if (!draft) return;
+
+  const accountName = draft.accountName.trim();
+  if (!accountName) {
+    throw new Error("Account name is required.");
+  }
+
+  const currency = draft.currency.trim() || null;
+  const openingBalance = draft.openingBalance.trim() || null;
+
+  state.busy = true;
+  state.status = "Adding account...";
+  render(state);
+
+  try {
+    const response = await invoke<ParseResponse>("add_account_to_generated_ledger", {
+      accountName,
+      currency,
+      openingBalance,
+    });
+    applyParse(state, response);
+    state.status = `Added account "${accountName}"`;
+    state.addAccountDraft = undefined;
+  } finally {
+    state.busy = false;
+    render(state);
+  }
+}
+
 function render(state: AppState): void {
   const balances = state.parse?.balances ?? [];
   const groups = new Map<string, AccountBalance[]>();
@@ -321,6 +352,15 @@ function render(state: AppState): void {
               })
               .join("")}
           </div>
+        </div>
+        <div class="sidebar__bottom">
+          <button
+            id="addAccountBtn"
+            class="btn btn--secondary btn--full"
+            type="button"
+            data-testid="add-account-btn"
+            ${state.busy ? "disabled" : ""}
+          >+ Add Account</button>
         </div>
       </aside>
 
@@ -528,6 +568,46 @@ function render(state: AppState): void {
         `
         : ""
     }
+    ${
+      state.addAccountDraft
+        ? `
+          <div class="modalOverlay" role="dialog" aria-modal="true" data-testid="add-account-modal">
+            <div class="modal">
+              <div class="modal__title">Add Account</div>
+              <label class="field">
+                <div class="field__label">Account Name (e.g., assets:bank:savings)</div>
+                <input id="newAccountName" class="field__input" value="${escapeText(
+                  state.addAccountDraft.accountName,
+                )}" ${state.busy ? "disabled" : ""} placeholder="assets:bank:savings" autocapitalize="off" autocorrect="off" spellcheck="false" />
+              </label>
+              <label class="field">
+                <div class="field__label">Default Currency (optional)</div>
+                <input id="newAccountCurrency" class="field__input" value="${escapeText(
+                  state.addAccountDraft.currency,
+                )}" ${state.busy ? "disabled" : ""} placeholder="USD" />
+              </label>
+              <label class="field">
+                <div class="field__label">Opening Balance (optional)</div>
+                <input id="newAccountBalance" class="field__input" value="${escapeText(
+                  state.addAccountDraft.openingBalance,
+                )}" ${state.busy ? "disabled" : ""} placeholder="0.00" />
+              </label>
+              ${
+                state.addAccountDraft.error
+                  ? `<div class="modal__error">${escapeText(state.addAccountDraft.error)}</div>`
+                  : ""
+              }
+              <div class="modal__actions">
+                <button id="addAccountCancel" class="btn btn--secondary" ${
+                  state.busy ? "disabled" : ""
+                }>Cancel</button>
+                <button id="addAccountSubmit" class="btn" ${state.busy ? "disabled" : ""}>Add</button>
+              </div>
+            </div>
+          </div>
+        `
+        : ""
+    }
   `;
 
   const importButton = document.querySelector<HTMLButtonElement>("#importFile");
@@ -626,6 +706,47 @@ function render(state: AppState): void {
       }
     }
   });
+
+  // Add Account handlers
+  const addAccountBtn = document.querySelector<HTMLButtonElement>("#addAccountBtn");
+  addAccountBtn?.addEventListener("click", () => {
+    state.addAccountDraft = {
+      accountName: "",
+      currency: "",
+      openingBalance: "",
+      error: undefined,
+    };
+    render(state);
+  });
+
+  const addAccountCancel = document.querySelector<HTMLButtonElement>("#addAccountCancel");
+  addAccountCancel?.addEventListener("click", () => {
+    state.addAccountDraft = undefined;
+    render(state);
+  });
+
+  const addAccountSubmit = document.querySelector<HTMLButtonElement>("#addAccountSubmit");
+  addAccountSubmit?.addEventListener("click", async () => {
+    if (!state.addAccountDraft) return;
+    state.addAccountDraft.error = undefined;
+
+    const accountName = document.querySelector<HTMLInputElement>("#newAccountName")?.value ?? "";
+    const currency = document.querySelector<HTMLInputElement>("#newAccountCurrency")?.value ?? "";
+    const openingBalance = document.querySelector<HTMLInputElement>("#newAccountBalance")?.value ?? "";
+    state.addAccountDraft.accountName = accountName;
+    state.addAccountDraft.currency = currency;
+    state.addAccountDraft.openingBalance = openingBalance;
+
+    try {
+      await addAccountDeclaration(state);
+    } catch (err) {
+      if (state.addAccountDraft) {
+        state.addAccountDraft.error = String(err);
+        state.busy = false;
+        render(state);
+      }
+    }
+  });
 }
 
 type AppState = {
@@ -640,6 +761,12 @@ type AppState = {
     payee: string;
     narration: string;
     postingsText: string;
+    error?: string;
+  };
+  addAccountDraft?: {
+    accountName: string;
+    currency: string;
+    openingBalance: string;
     error?: string;
   };
 };

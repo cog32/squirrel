@@ -214,3 +214,26 @@ When('I add a manual transaction with payee {string} and notes {string}', async 
 
   await driver.wait(until.elementTextContains(driver.findElement(By.css('[data-testid="parse-status"]')), "added manual"), 30_000);
 });
+
+// Add Account feature steps
+When('I click the "Add Account" button', async () => {
+  const addAccountBtn = await driver.findElement(By.css('[data-testid="add-account-btn"]'));
+  await addAccountBtn.click();
+  await driver.wait(until.elementLocated(By.css('[data-testid="add-account-modal"]')), 10_000);
+});
+
+When('I enter account name {string}', async (accountName) => {
+  const input = await driver.findElement(By.css('#newAccountName'));
+  await input.clear();
+  await input.sendKeys(accountName);
+});
+
+When('I submit the new account form', async () => {
+  const submitBtn = await driver.findElement(By.css('#addAccountSubmit'));
+  await submitBtn.click();
+  // Wait for modal to close
+  await driver.wait(async () => {
+    const modals = await driver.findElements(By.css('[data-testid="add-account-modal"]'));
+    return modals.length === 0;
+  }, 10_000);
+});

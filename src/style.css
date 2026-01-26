@@ -43,6 +43,12 @@ body {
 .sidebar__section {
   padding: 10px 10px 14px;
   overflow: auto;
+  flex: 1;
+}
+
+.sidebar__bottom {
+  padding: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar__title {
@@ -207,6 +213,11 @@ body {
   color: #111827;
 }
 
+.btn--full {
+  width: 100%;
+  margin-top: 12px;
+}
+
 .topbar__right {
   display: flex;
   flex-direction: column;
@@ -302,6 +313,7 @@ body {
 .field__input,
 .field__textarea {
   width: 100%;
+  box-sizing: border-box;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 10px 12px;
