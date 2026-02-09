@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::Manager;
 use squirrel_covid::generated_ledger::rotate_ledger_if_needed;
 use squirrel_covid::generated_store::{add_account_declaration, add_manual_transaction, import_source_files, load_active_ledger, ImportStats, ManualTransactionInput};
 use squirrel_covid::ledger_parser::{
@@ -40,9 +41,9 @@ fn resolve_generated_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
   }
 
   let app_dir = app
-    .path_resolver()
+    .path()
     .app_data_dir()
-    .ok_or_else(|| "failed to resolve app data dir".to_string())?;
+    .map_err(|e| format!("failed to resolve app data dir: {e}"))?;
   Ok(app_dir.join("generated"))
 }
 
@@ -110,6 +111,7 @@ fn add_account_to_generated_ledger(
 
 fn main() {
   tauri::Builder::default()
+    .plugin(tauri_plugin_dialog::init())
     .setup(|app| {
       // E2E-only: allow seeding generated ledger without UI interactions.
       if let Ok(paths) = env::var("SQUIRREL_E2E_IMPORT_PATHS") {
